@@ -1,0 +1,23 @@
+C
+Lucas
+111-222-333-44
+P
+3
++55 11 12345-6789
++55 11 98765-4321
++55 11 24680-1357
+M
+1
+lucas@gmail.com
+C
+Julia
+555-666-777-88
+P
+2
++55 11 11111-2222
++55 11 33333-4444
+M
+2
+julia@gmail.com
+julia@hotmail.com
+julia@yahoo.com

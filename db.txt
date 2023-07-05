@@ -1,0 +1,22 @@
+C
+Joao
+123-456-789-01
+P
+2
++55 11 99999-9999
++55 11 88888-8888
+M
+2
+joao@gmail.com
+joao@hotmail.com
+C
+Maria
+987-654-321-01
+P
+1
++55 11 77777-7777
+M
+3
+maria@gmail.com
+maria@hotmail.com
+maria@contato.com
