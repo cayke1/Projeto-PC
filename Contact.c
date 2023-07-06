@@ -219,17 +219,30 @@ bool Email_edit(Email *email_to_edit, const char *new_mail) {
   return true;
 }
 
-bool List_insert(List *list, Contact *new_contact) {
-  if (new_contact == NULL)
+bool List_insert(List *list, const char *name, const char *cpf) {
+  Contact new_contact = Contact_create(name, cpf);
+  if(new_contact == NULL) {
+    printf("\nFalha em criar o contato\n");
     return false;
+  }
+  if(strcmp(list->first_contact->cpf, cpf) == 0) {
+    printf("\nO CPF deste contato ja esta inserido na lista\n");
+    free(new_contact);
+    return false;
+  }
+  
 
   if (list->first_contact == NULL) {
     list->first_contact = new_contact;
-    printf("\n lista estava vazia\n");
     return true;
   }
   Contact *auxiliar = list->first_contact;
   while (auxiliar->prox != NULL)
+    if(strcmp(auxiliar->prox->cpf, new_contact->cpf) == 0) {
+      printf("\nO CPF deste contato ja esta inserido na lista\n");
+      free(new_contact);
+      return false;
+    }
     auxiliar = auxiliar->prox;
   auxiliar->prox = new_contact;
   return true;
@@ -421,14 +434,8 @@ List *List_load_fromdb() {
       name[strcspn(name, "\n")] = '\0';
       cpf[strcspn(cpf, "\n")] = '\0';
 
-      Contact *new_contact = Contact_create(name, cpf);
-      if (list->first_contact == NULL) {
-        list->first_contact = new_contact;
-        current_contact = new_contact;
-      } else {
-        current_contact->prox = new_contact;
-        current_contact = new_contact;
-      }
+      List_insert(list, name, cpf);
+      current_contact = Contact_find_by_cpf(cpf);
     } else if (line[0] == 'P') {
       int num_phones;
       fscanf(file, "%d", &num_phones);
@@ -475,8 +482,8 @@ bool List_insert_by_file(List *list) {
       buff = fgets(cpf, sizeof(cpf), file);
       name[strcspn(name, "\n")] = '\0';
       cpf[strcspn(cpf, "\n")] = '\0';
-      new_contact = Contact_create(name, cpf);
-      List_insert(list, new_contact);
+      List_insert(list, name, cpf);
+      new_contact = Contact_find_by_cpf(cpf);
     } else if (line[0] == 'P') {
       int num_phones;
       fscanf(file, "%d", &num_phones);
@@ -559,7 +566,7 @@ List *List_query_by_file(List *list) {
       strcpy(cpf, line);
       if (validateCPF(cpf)) {
         Contact *aux_contact = Contact_find_by_cpf(list, cpf);
-        List_insert(aux, aux_contact);
+        List_insert(aux, aux_contact->name,  aux_contact->cpf);
       } else {
         printf("\nFormato de cpf invalido");
       }

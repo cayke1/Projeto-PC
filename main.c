@@ -5,26 +5,6 @@
 
 void invalid_input() { printf("\nEscolha uma entrada valida\n"); }
 
-void insert_spaces_in_phone(char *str) {
-  //+551199999-9999
-  //+55 11 99999-9999
-  int len = strlen(str);
-  int num_spaces = 2;             // Número de espaços a serem inseridos
-  int space_positions[] = {3, 6}; // Posições dos espaços a serem inseridos
-
-  for (int i = 0; i < num_spaces; i++) {
-    if (space_positions[i] >= len)
-      break; // Ignora posições inválidas
-
-    for (int j = len; j > space_positions[i]; j--) {
-      str[j] = str[j - 1];
-    }
-
-    str[space_positions[i]] = ' ';
-    len++; // Atualiza o comprimento da string
-  }
-}
-
 void manual_insert(List *list) {
   char name[MAX_NAME_LENGTH], cpf[MAX_CPF_LENGTH], phone[MAX_PHONE_LENGTH],
       email[MAX_MAIL_LENGTH];
@@ -39,7 +19,11 @@ void manual_insert(List *list) {
     printf("\nDigite o cpf do contato: ");
     scanf("%s", cpf);
   }
-  Contact *created_contact = Contact_create(name, cpf);
+  if(!List_insert(list, name, cpf)) {
+    printf("\nFalha ao criar contato\n");
+    return;
+  } 
+  Contact *created_contact = Contact_find_by_cpf(cpf);
   while (n == 1) {
     printf("\nDigte o numero do contato: ");
     scanf("%s", phone);
@@ -47,7 +31,6 @@ void manual_insert(List *list) {
       printf("\nNumero de telefone invalido, tente novamente: ");
       scanf("%s", phone);
     }
-    insert_spaces_in_phone(phone);
     Phone_insert(created_contact, phone);
     printf("\nDeseja inserir mais numeros de telefone?");
     printf("\n1 - Sim");
@@ -73,7 +56,6 @@ void manual_insert(List *list) {
       invalid_input();
     }
   }
-  List_insert(list, created_contact);
 }
 
 void insert_by_file(List *list) { List_insert_by_file(list); }
@@ -237,7 +219,6 @@ void contact_edit(List *list) {
           printf("\n Formato de telefone invalido, insira novamente: ");
           scanf("%s", phone_to_edit);
         }
-        insert_spaces_in_phone(phone_to_edit);
         printf("\n%s\n", phone_to_edit);
         Phone *aux = Phone_find(contact_to_edit, phone_to_edit);
         if (aux == NULL)
@@ -248,7 +229,6 @@ void contact_edit(List *list) {
           printf("\n Formato de telefone invalido, insira novamente: ");
           scanf("%s", new_number);
         }
-        insert_spaces_in_phone(new_number);
         Phone_edit(aux, new_number);
         printf("\n Deseja editar outro telefone deste contato?");
         printf("\n 1 - Sim");
