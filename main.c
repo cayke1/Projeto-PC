@@ -19,11 +19,9 @@ void manual_insert(List *list) {
     printf("\nDigite o cpf do contato: ");
     scanf("%s", cpf);
   }
-  if(!List_insert(list, name, cpf)) {
-    printf("\nFalha ao criar contato\n");
+  Contact *created_contact = Contact_create(name, cpf);
+  if (!List_insert(list, created_contact))
     return;
-  } 
-  Contact *created_contact = Contact_find_by_cpf(cpf);
   while (n == 1) {
     printf("\nDigte o numero do contato: ");
     scanf("%s", phone);
@@ -78,7 +76,7 @@ void manual_query(List *list) {
   char cpf[MAX_CPF_LENGTH], name[MAX_NAME_LENGTH];
   printf("\nComo deseja buscar o contato?");
   printf("\n1 - CPF");
-  printf("\n2 - Nome");
+  printf("\n2 - Nome\n");
   scanf("%d", &option);
   switch (option) {
   case 1: {
@@ -101,6 +99,7 @@ void manual_query(List *list) {
         break;
       }
     }
+    break;
   }
   case 2: {
     while (n == 1) {
@@ -118,6 +117,7 @@ void manual_query(List *list) {
         break;
       }
     }
+    break;
   }
   default: {
     invalid_input();
@@ -219,7 +219,6 @@ void contact_edit(List *list) {
           printf("\n Formato de telefone invalido, insira novamente: ");
           scanf("%s", phone_to_edit);
         }
-        printf("\n%s\n", phone_to_edit);
         Phone *aux = Phone_find(contact_to_edit, phone_to_edit);
         if (aux == NULL)
           break;
@@ -300,7 +299,7 @@ int main(void) {
     printf("\nMenu\n");
     printf("1 - Adicionar Contato\n");
     printf("2 - Remover Contato\n");
-    printf("3 - Selecionar Contato(s)\n");
+    printf("3 - Buscar Contato(s)\n");
     printf("4 - Editar Contatos\n");
     printf("5 - Imprimir Lista Completa\n");
     printf("6 - Sair \n");

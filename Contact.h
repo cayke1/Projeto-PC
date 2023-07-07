@@ -34,7 +34,7 @@ typedef struct _list {
 /**
  * Cria instâncias de lista.
  * @return Ponteiro para a instância de lista criada
-*/
+ */
 
 List *List_create();
 
@@ -82,8 +82,9 @@ bool Phone_remove(Contact *, const char *phone);
  * Tenta encontrar um telefone pelo seu numero.
  * @param Contact Ponteiro para a instância de contato
  * @param phone_number Número o qual será pesquisado
- * @return Ponteiro para a instância de Telefone, ou NULL caso não seja encontrado
-*/
+ * @return Ponteiro para a instância de Telefone, ou NULL caso não seja
+ * encontrado
+ */
 Phone *Phone_find(Contact *, const char *phone_number);
 
 /**
@@ -91,7 +92,7 @@ Phone *Phone_find(Contact *, const char *phone_number);
  * @param Phone Ponteiro da instância de telefone.
  * @param new_number Número que será inserido na instância
  * @return true se o telefone foi editado com sucesso, false caso contrário.
-*/
+ */
 
 bool Phone_edit(Phone *phone_to_edit, const char *new_number);
 
@@ -116,7 +117,7 @@ bool Email_remove(Contact *, const char *mail);
  * @param Contact Ponteiro para a instância de contato
  * @param mailaddress Email o qual será pesquisado
  * @return Ponteiro para a instância de Email, ou NULL caso não seja encontrado
-*/
+ */
 
 Email *Email_find(Contact *, const char *mailaddress);
 
@@ -125,7 +126,7 @@ Email *Email_find(Contact *, const char *mailaddress);
  * @param Email Ponteiro da instância de email.
  * @param new_mail Endereço que será inserido na instância
  * @return true se o email foi editado com sucesso, false caso contrário.
-*/
+ */
 
 bool Email_edit(Email *email_to_edit, const char *new_mail);
 
@@ -216,10 +217,25 @@ List *List_query_by_file(List *);
 
 // Validação de entrada
 
+/**
+ * Tenta validar o formato do cpf
+ * @param cpf Cpf a ser validado
+ * @return true caso o cpf seja válido, false caso contrário
+*/
 bool validateCPF(const char *cpf);
 
+/**
+ * Tenta validar o formato do telefone
+ * @param phoneNumber Número a ser validado
+ * @return true caso o número seja válido, false caso contrário
+*/
 bool validatePhoneNumber(const char *phoneNumber);
 
+/**
+ * Tenta validar o formato do email
+ * @param email Email a ser validado
+ * @return true caso o email seja válido, false caso contrário
+*/
 bool validateEmail(const char *email);
 
 #endif /* CONTACT_H */

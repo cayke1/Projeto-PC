@@ -219,31 +219,26 @@ bool Email_edit(Email *email_to_edit, const char *new_mail) {
   return true;
 }
 
-bool List_insert(List *list, const char *name, const char *cpf) {
-  Contact new_contact = Contact_create(name, cpf);
-  if(new_contact == NULL) {
+bool List_insert(List *list, Contact *new_contact) {
+  if (new_contact == NULL) {
     printf("\nFalha em criar o contato\n");
     return false;
   }
-  if(strcmp(list->first_contact->cpf, cpf) == 0) {
-    printf("\nO CPF deste contato ja esta inserido na lista\n");
-    free(new_contact);
-    return false;
-  }
-  
-
   if (list->first_contact == NULL) {
     list->first_contact = new_contact;
     return true;
   }
   Contact *auxiliar = list->first_contact;
-  while (auxiliar->prox != NULL)
-    if(strcmp(auxiliar->prox->cpf, new_contact->cpf) == 0) {
+  while (auxiliar->prox != NULL) {
+    // Checa se algum cpf presente na lista é igual ao que está sendo
+    // inserido
+    if (strcmp(auxiliar->cpf, new_contact->cpf) == 0) {
       printf("\nO CPF deste contato ja esta inserido na lista\n");
       free(new_contact);
       return false;
     }
     auxiliar = auxiliar->prox;
+  }
   auxiliar->prox = new_contact;
   return true;
 }
@@ -285,6 +280,7 @@ Contact *Contact_find_by_cpf(List *list, const char *cpf) {
   }
   if (!validateCPF(cpf)) {
     printf("\nO formato do cpf esta invalido\n");
+    return NULL;
   }
   if (strcmp(list->first_contact->cpf, cpf) == 0) {
     return list->first_contact;
@@ -434,8 +430,14 @@ List *List_load_fromdb() {
       name[strcspn(name, "\n")] = '\0';
       cpf[strcspn(cpf, "\n")] = '\0';
 
-      List_insert(list, name, cpf);
-      current_contact = Contact_find_by_cpf(cpf);
+      Contact *new_contact = Contact_create(name, cpf);
+      if (list->first_contact == NULL) {
+        list->first_contact = new_contact;
+        current_contact = new_contact;
+      } else {
+        current_contact->prox = new_contact;
+        current_contact = new_contact;
+      }
     } else if (line[0] == 'P') {
       int num_phones;
       fscanf(file, "%d", &num_phones);
@@ -482,8 +484,8 @@ bool List_insert_by_file(List *list) {
       buff = fgets(cpf, sizeof(cpf), file);
       name[strcspn(name, "\n")] = '\0';
       cpf[strcspn(cpf, "\n")] = '\0';
-      List_insert(list, name, cpf);
-      new_contact = Contact_find_by_cpf(cpf);
+      new_contact = Contact_create(name, cpf);
+      List_insert(list, new_contact);
     } else if (line[0] == 'P') {
       int num_phones;
       fscanf(file, "%d", &num_phones);
@@ -549,30 +551,41 @@ bool List_remove_by_file(List *list) {
 List *List_query_by_file(List *list) {
   char line[MAX_CPF_LENGTH];
   FILE *file;
-  fopen("busca-contatos.txt", "r");
+  file = fopen("busca-contatos.txt", "r");
   if (file == NULL) {
     printf("Erro ao abrir o arquivo.\n");
     return NULL;
   }
-  List *aux = List_create();
-  while (fgets(line, sizeof(line), file)) {
-    int num_cpfs;
-    fscanf(file, "%d", &num_cpfs);
-    fgetc(file);
-    char cpf[MAX_CPF_LENGTH];
-    for (int i = 0; i < num_cpfs; i++) {
-      fgets(line, sizeof(line), file);
-      line[strcspn(line, "\n")] = 0;
-      strcpy(cpf, line);
-      if (validateCPF(cpf)) {
-        Contact *aux_contact = Contact_find_by_cpf(list, cpf);
-        List_insert(aux, aux_contact->name,  aux_contact->cpf);
-      } else {
-        printf("\nFormato de cpf invalido");
-      }
+
+  List *result = List_create();
+  int num_cpfs;
+  if (fscanf(file, "%d", &num_cpfs) != 1) {
+    printf("Erro ao ler o número de CPFs.\n");
+    fclose(file);
+    return NULL;
+  }
+  fgets(line, sizeof(line),
+        file); // Consumir o caractere de nova linha após o número
+
+  for (int i = 0; i < num_cpfs; i++) {
+    if (fgets(line, sizeof(line), file) == NULL) {
+      printf("Erro ao ler o CPF.\n");
+      break;
+    }
+    line[strcspn(line, "\n")] = '\0';
+    Contact *aux_contact = Contact_find_by_cpf(list, line);
+    if (aux_contact == NULL) {
+      printf("%d CPF não encontrado\n\n", i);
+      break;
+    }
+    if (!List_insert(result, aux_contact)) {
+      printf("Erro ao inserir na lista.\n");
+      break;
     }
   }
-  return aux;
+
+  fclose(file);
+  return result;
 }
 
 // Validação de entrada
@@ -626,11 +639,11 @@ bool validatePhoneNumber(const char *phoneNumber) {
 }
 
 bool validateEmail(const char *email) {
-  // Verificar se a string tem pelo menos 3 caracteres
   if (strlen(email) < 3) {
     return false;
   }
-  // Verificar se há um único símbolo '@'
+  
+  // Verifica se há um único símbolo '@'
   int atSymbolCount = 0;
   for (int i = 0; i < strlen(email); i++) {
     if (email[i] == '@') {
@@ -640,11 +653,11 @@ bool validateEmail(const char *email) {
   if (atSymbolCount != 1) {
     return false;
   }
-  // Verificar se o primeiro e último caracteres não são '@'
+  // Verifica se o primeiro e último caracteres não são '@'
   if (email[0] == '@' || email[strlen(email) - 1] == '@') {
     return false;
   }
-  // Verificar se há um único ponto após o '@'
+  // Verifica se há um único ponto após o '@'
   int dotAfterAtSymbolCount = 0;
   for (int i = 0; i < strlen(email); i++) {
     if (email[i] == '.' && i > 0 && i < strlen(email) - 1 &&
